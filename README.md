@@ -28,27 +28,6 @@ We followed an agile approach, breaking the project into smaller milestones like
 
 ---
 
-## Challenges We Ran Into  
-1. **Dynamic Scheduling Logic**: Balancing assignment priorities, deadlines, and available time was tricky to code in a way that feels natural for users.  
-2. **UI Responsiveness**: Making the design intuitive and visually clear across devices required extra attention to detail.  
-3. **Time Management**: Limited time during the hackathon meant we had to prioritize features and leave some optional ideas for later development.  
-
----
-
-## Accomplishments That We're Proud Of  
-- Successfully implementing a dynamic scheduling system that adapts to user inputs and prioritizes tasks effectively.  
-- Creating a visually appealing and functional UI within the hackathon time frame.  
-- Building a tool that could genuinely help students like us organize their work and reduce stress.  
-
----
-
-## What We Learned  
-- **Technical Skills**: Improved our knowledge of Flask, databases, and scheduling algorithms.  
-- **Teamwork**: Learned how to collaborate effectively under pressure and divide tasks based on individual strengths.  
-- **User-Centric Design**: Realized the importance of making the app intuitive and addressing real-world problems faced by students.  
-
----
-
 ## What’s Next for StudyBuddy  
 1. **Mobile App Version**: Extend StudyBuddy into a mobile app for even greater accessibility.  
 2. **Advanced Scheduling Features**:  

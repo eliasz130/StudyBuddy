@@ -1,12 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, redirect, url_for, request, flash # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
+from sqlalchemy.exc import SQLAlchemyError # type: ignore
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash # type: ignore
 from datetime import datetime
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this!
+app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key')
 
 # SQLite Configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -50,7 +51,9 @@ class StudySession(db.Model):
     name = db.Column(db.String(80), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
-    duration = db.Column(db.Integer, nullable=False)  # in minutes
+    @property
+    def duration(self):
+        return int((self.end_time - self.start_time).total_seconds() / 60)  # in minutes
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -71,13 +74,16 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    else:
+        return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
         
         if user and user.check_password(password):
@@ -86,23 +92,34 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password', 'danger')
+            return redirect(url_for('login'))
     
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
-def register():
+def register():  # sourcery skip: use-named-expression
     if request.method != 'POST':
         return render_template('register.html')
+
     username = request.form['username']
+    import re
     email = request.form['email']
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    if not re.match(email_regex, email):
+        flash('Invalid email address', 'danger')
+        return redirect(url_for('register'))
+    existing_email = User.query.filter_by(email=email).first()
+    if existing_email:
+        flash('Email already exists', 'danger')
+        return redirect(url_for('register'))
     password = request.form['password']
     confirm_password = request.form['confirm_password']
 
     if password != confirm_password:
         flash('Passwords do not match', 'danger')
         return redirect(url_for('register'))
-
-    if existing_user := User.query.filter_by(username=username).first():
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
         flash('Username already exists', 'danger')
         return redirect(url_for('register'))
 
@@ -111,9 +128,6 @@ def register():
 
     db.session.add(new_user)
     db.session.commit()
-
-    flash('Registration successful! Please log in.', 'success')
-    return redirect(url_for('login'))
 
 @app.route('/profile')
 @login_required
@@ -130,8 +144,53 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', user=current_user)
 
-# Run the application
+@app.route('/task/<int:task_id>')
+@login_required
+def task(task_id):
+    task = Tasks.query.get_or_404(task_id)
+    if task.user_id != current_user.id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    return render_template('task_detail.html', task=task)
+
+@app.route('/create_task', methods=['GET', 'POST'])
+@login_required
+def create_task():
+    render_template('create_task.html')
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    
+    if not name or not description:
+        flash('Task name and description are required', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    if len(name) > 80 or len(description) > 120:
+        flash('Task name or description too long', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    new_task = Tasks(name=name, description=description, user_id=current_user.id)
+    
+    try:
+        db.session.add(new_task)
+        db.session.commit()
+        flash('Task created successfully', 'success')
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash('Error creating task', 'danger')
+    
+    return redirect(url_for('dashboard'))
+
+@app.route('/tasks.html', methods=['GET'])
+def view_tasks():
+    tasks = Tasks.query.filter_by(user_id=current_user.id).all()
+    if not tasks:
+        flash('No tasks found', 'info')
+        return redirect(url_for('dashboard'))
+    return render_template('tasks.html', tasks=tasks)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    db.create_all()
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
+    app.run(debug=debug_mode)

@@ -1,5 +1,14 @@
 {% extends 'layout.html' %}
-
+{% block title %}StudyBuddy{% endblock %}
 {% block content %}
+<h1>StudyBuddy</h1>
+<h3>Organizing your study sessions</h3>
+    <p>Sign up or log in to get started.</p>
+<div class="text-center mt-4">
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Sign Up</a>
+</div>
 
+<div class="text-center mt-4">
+    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Log In</a>
+</div>
 {% endblock %}

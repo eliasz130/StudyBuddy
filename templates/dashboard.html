@@ -1,5 +1,15 @@
 {% extends 'layout.html' %}
-
+{% block title %}Home - StudyBuddy{% endblock %}
 {% block content %}
+<div class="container dashboard-container">
+    <h1>{{ user.username }},  Welcome to StudyBuddy</h1>
+    <p>Here you can view your profile, create a new study group, or join an existing study group.</p>
 
+    <h3>Your Tasks</h3>
+    <div class="mb-4">
+        <a href="{{ url_for('view_tasks') }}" class="btn btn-primary">View Tasks</a>
+    <div class="mb-4">
+        <a href="{{ url_for('create_task') }}" class="btn btn-primary">Create New Task</a>
+    </div>
+</div>
 {% endblock %}

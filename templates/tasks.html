@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+
+{% block title %}Tasks - StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <div class="row">
+        {% for task in tasks %}
+            <div class="col">
+                <div class="card custom-card-width my-card-class">
+                    <img src="{{ task.image_url|escape }}" class="card-img-top" alt="Image">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ task.title }}</h5>
+                        <p class="card-text">{{ task.description }}</p>
+                        <a href="{ task.get_absolute_url }" class="btn btn-primary">{{ task.title }}</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,7 @@
 # Misc
 todo.md
+.vscode/
+studybuddy.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

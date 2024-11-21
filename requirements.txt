@@ -1,0 +1,3 @@
+Python == 3.12.7
+Flask == 3.0.0
+Werkzeug == 3.0.1

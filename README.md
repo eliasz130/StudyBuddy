@@ -22,7 +22,7 @@ We built StudyBuddy using the following tools and technologies:
 - **Database**: SQLite for storing user data (assignments, deadlines, progress).  
 - **Frontend**: HTML, CSS, and JavaScript for a clean and responsive user interface. We used Bootstrap to speed up the design process.  
 - **Algorithms**: Python's Pandas library to organize and prioritize assignments dynamically.  
-- **Deployment**: Hosted on Azure for easy accessibility.  
+- **Deployment**: Hosted on Heroku for easy accessibility.  
 
 We followed an agile approach, breaking the project into smaller milestones like user authentication, database setup, scheduling logic, and UI design.  
 

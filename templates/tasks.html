@@ -1,21 +1,103 @@
 {% extends 'layout.html' %}
-
 {% block title %}Tasks - StudyBuddy{% endblock %}
-
 {% block content %}
-<div class="container text-center">
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Your Tasks</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('create_task') }}" class="btn btn-primary">Create New Task</a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="q" placeholder="Search tasks..." value="{{ request.args.get('q', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control" name="priority">
+                                <option value="">All Priorities</option>
+                                {% for priority in priorities %}
+                                <option value="{{ priority.name }}" 
+                                        {% if request.args.get('priority') == priority.name %}selected{% endif %}>
+                                    {{ priority.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control" name="status">
+                                <option value="">All Statuses</option>
+                                {% for status in statuses %}
+                                <option value="{{ status.name }}"
+                                        {% if request.args.get('status') == status.name %}selected{% endif %}>
+                                    {{ status.name|replace('_', ' ') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control" name="sort">
+                                <option value="due_date">Sort by Due Date</option>
+                                <option value="priority">Sort by Priority</option>
+                                <option value="created">Sort by Created Date</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Apply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         {% for task in tasks %}
-            <div class="col">
-                <div class="card custom-card-width my-card-class">
-                    <img src="{{ task.image_url|escape }}" class="card-img-top" alt="Image">
-                    <div class="card-body">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                {% if task.image_url %}
+                <img src="{{ task.image_url|escape }}" class="card-img-top" alt="Task image">
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="card-title">{{ task.title }}</h5>
-                        <p class="card-text">{{ task.description }}</p>
-                        <a href="{ task.get_absolute_url }" class="btn btn-primary">{{ task.title }}</a>
+                        <span class="badge bg-{{ task.priority.name|lower }}">
+                            {{ task.priority.name }}
+                        </span>
+                    </div>
+                    <p class="card-text">{{ task.description[:100] }}...</p>
+                    
+                    {% if task.tags %}
+                    <div class="mb-2">
+                        {% for tag in task.tags.split(',') %}
+                        <span class="badge bg-secondary">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ task.progress[-1].progress_percentage if task.progress else 0 }}%">
+                            {{ task.progress[-1].progress_percentage if task.progress else 0 }}%
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'No due date' }}
+                        </small>
+                        <a href="{{ url_for('view_tasks', task_id=task.id) }}" class="btn btn-primary">
+                            View Details
+                        </a>
                     </div>
                 </div>
             </div>
+        </div>
         {% endfor %}
     </div>
 </div>

@@ -2,14 +2,42 @@
 {% block title %}Home - StudyBuddy{% endblock %}
 {% block content %}
 <div class="container dashboard-container">
-    <h1>{{ user.username }},  Welcome to StudyBuddy</h1>
-    <p>Here you can view your profile, create a new study group, or join an existing study group.</p>
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Here you can manage your tasks and track your study progress.</p>
 
-    <h3>Your Tasks</h3>
-    <div class="mb-4">
-        <a href="{{ url_for('view_tasks') }}" class="btn btn-primary">View Tasks</a>
-    <div class="mb-4">
-        <a href="{{ url_for('create_task') }}" class="btn btn-primary">Create New Task</a>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('view_tasks') }}" class="btn btn-primary">View Tasks</a>
+                        <a href="{{ url_for('create_task') }}" class="btn btn-success">Create New Task</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Study Statistics</h3>
+                </div>
+                <div class="card-body">
+                    <div class="study-stats">
+                        <p><strong>Total Study Sessions:</strong> {{ user.study_sessions|length }}</p>
+                        <p><strong>Active Tasks:</strong> 
+                            {{ user.tasks|selectattr('status.name', 'equalto', 'IN_PROGRESS')|list|length }}
+                        </p>
+                        <p><strong>Completed Tasks:</strong>
+                            {{ user.tasks|selectattr('status.name', 'equalto', 'COMPLETED')|list|length }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

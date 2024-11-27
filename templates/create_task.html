@@ -11,25 +11,39 @@
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('create_task') }}">
                         <div class="form-group mb-3">
-                            <label for="title">Task Title</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
+                            <label for="title" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required maxlength="80">
                         </div>
+
                         <div class="form-group mb-3">
-                            <label for="description">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required maxlength="500"></textarea>
                         </div>
+
                         <div class="form-group mb-3">
-                            <label for="due_date">Due Date</label>
-                            <input type="date" class="form-control" id="due_date" name="due_date" required>
+                            <label for="due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
                         </div>
+
                         <div class="form-group mb-3">
-                            <label for="priority">Priority</label>
-                            <select class="form-control" id="priority" name="priority">
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-control" id="priority" name="priority" required>
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
                             </select>
                         </div>
+
+                        <div class="form-group mb-3">
+                            <label for="image_url" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url">
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="tags" class="form-label">Tags (comma-separated)</label>
+                            <input type="text" class="form-control" id="tags" name="tags" placeholder="study, math, homework">
+                        </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">Create Task</button>
                             <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>

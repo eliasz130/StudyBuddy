@@ -1,5 +1,154 @@
 {% extends 'layout.html' %}
-{% block title %} {{ tasks.name }} - StudyBuddy{% endblock %}
+{% block title %}{{ task.title }} - StudyBuddy{% endblock %}
 {% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">{{ task.title }}</h2>
+                    <span class="badge bg-{{ task.status.name|lower }}">
+                        {{ task.status.name|replace('_', ' ') }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Due Date:</strong> 
+                                {% if task.due_date %}
+                                    {{ task.due_date.strftime('%Y-%m-%d') }}
+                                    {% if task.is_overdue %}
+                                        <span class="text-danger">(Overdue)</span>
+                                    {% endif %}
+                                {% else %}
+                                    No due date
+                                {% endif %}
+                            </p>
+                            <p><strong>Priority:</strong> 
+                                <span class="badge bg-{{ task.priority.name|lower }}">
+                                    {{ task.priority.name }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Created:</strong> {{ task.created_at.strftime('%Y-%m-%d') }}</p>
+                            <p><strong>Last Updated:</strong> {{ task.updated_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                    </div>
 
+                    <div class="description mb-3">
+                        <h4>Description</h4>
+                        <p>{{ task.description }}</p>
+                    </div>
+
+                    {% if task.tags %}
+                    <div class="tags mb-3">
+                        <h4>Tags</h4>
+                        {% for tag in task.tags.split(',') %}
+                            <span class="badge bg-secondary">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="study-sessions mb-3">
+                        <h4>Study Sessions</h4>
+                        <p><strong>Total Study Time:</strong> {{ task.total_study_time }} minutes</p>
+                        <button class="btn btn-primary" onclick="startStudySession({{ task.id }})">
+                            Start Study Session
+                        </button>
+                    </div>
+
+                    <div class="progress-tracking mb-3">
+                        <h4>Progress</h4>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: {{ task.progress[-1].progress_percentage if task.progress else 0 }}%">
+                                {{ task.progress[-1].progress_percentage if task.progress else 0 }}%
+                            </div>
+                        </div>
+                        <form onsubmit="updateProgress(event, {{ task.id }})">
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="progress" min="0" max="100" placeholder="Progress %">
+                                <input type="text" class="form-control" name="notes" placeholder="Progress notes">
+                                <button class="btn btn-outline-primary" type="submit">
+                                    Update Progress
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="updateTaskStatus({{ task.id }}, 'COMPLETED')">
+                            Mark as Complete
+                        </button>
+                        <a href="{{ url_for('view_tasks') }}" class="btn btn-secondary">Back to Tasks</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startStudySession(taskId) {
+    fetch(`/task/${taskId}/start_session`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.session_id) {
+            alert('Study session started!');
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function updateProgress(event, taskId) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    
+    fetch(`/task/${taskId}/update_progress`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.progress_id) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function updateTaskStatus(taskId, status) {
+    if (!confirm('Are you sure you want to update the task status?')) return;
+    
+    fetch(`/task/${taskId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 {% endblock %}
